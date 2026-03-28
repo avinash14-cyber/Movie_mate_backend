@@ -38,6 +38,7 @@ class MediaCreate(BaseModel):
     genre: str
     platform: str
     type: str
+    description: Optional[str] = None
     total_seasons: Optional[int] = None
     poster_url: Optional[str] = None
 
@@ -46,11 +47,11 @@ class MediaCreate(BaseModel):
 
 class ProgressUpdate(BaseModel):
     status: str
-    seasons_watched: Optional[int] = None    
+     
 
 class RatingUpdate(BaseModel):
     rating: int
-    review: Optional[str] = None    
+       
 
 
 # 🔹 POST API
@@ -61,6 +62,7 @@ def create_media(media: MediaCreate, db: Session = Depends(get_db)):
         genre=media.genre,
         platform=media.platform,
         type=media.type,
+        description=media.description,
         total_seasons=media.total_seasons,
         poster_url=media.poster_url
     )
@@ -72,8 +74,13 @@ def create_media(media: MediaCreate, db: Session = Depends(get_db)):
 
 # 🔹 GET API
 @app.get("/media")
-def get_all_media(db: Session = Depends(get_db)):
-    return db.query(Media).all()
+def get_all_media(type: str = None,db: Session = Depends(get_db)):
+    query = db.query(Media)
+
+    if type:
+        query = query.filter(Media.type == type)
+
+    return query.all()
 
 # updating progres
 
@@ -87,8 +94,7 @@ def update_progress(id: int, data: ProgressUpdate, db: Session = Depends(get_db)
 
     media.status = data.status
 
-    if media.type == "series" and data.seasons_watched is not None:
-        media.seasons_watched = data.seasons_watched
+    
 
     db.commit()
     db.refresh(media)
@@ -105,11 +111,11 @@ def update_rating(id: int, data: RatingUpdate, db: Session = Depends(get_db)):
     if not media:
         return {"error": "Media not found"}
 
-    if media.status != "Completed":
+    if media.status != "Watched":
         return {"error": "Can only rate completed media"}
 
     media.rating = data.rating
-    media.review = data.review
+    
 
     db.commit()
     db.refresh(media)

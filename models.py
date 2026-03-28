@@ -12,15 +12,15 @@ class Media(Base):
 
     type = Column(String, nullable=False)  
     # "movie" or "series"
-
-    status = Column(String, default="Wishlist")  
+    description = Column(String, nullable=True)
+    status = Column(String, default="Not watched") 
     
 
     total_seasons = Column(Integer, nullable=True)
-    seasons_watched = Column(Integer, default=0)
+   
 
     rating = Column(Integer, nullable=True)
-    review = Column(String, nullable=True)
+    
 
     poster_url = Column(String, nullable=True)
 
